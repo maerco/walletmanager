@@ -46,6 +46,9 @@ def coin_status(coinname):
 def wallet_balance(wallet_address, coinname):
 
     for i in range(0, 20):
+        if i == 19:
+            print "chain.so API is not answering"
+            exit(2)
         try:
             response = requests.get("https://chain.so/api/v2/get_address_balance/" + coinname + "/" + wallet_address)
 
@@ -71,6 +74,9 @@ def wallet_balance(wallet_address, coinname):
 def wallet_transactions(wallet_address, coinname):
 
     for i in range(0, 20):
+        if i == 19:
+            print "chain.so API is not answering"
+            exit(2)
         try:
             response = requests.get(
                 "https://chain.so/api/v2/address/" + coinname + "/" + wallet_address)
@@ -108,6 +114,10 @@ def wallet_transactions(wallet_address, coinname):
 def getprice(coinname, fiat):
 
     for i in range(0, 20):
+
+        if i == 19:
+            print "chain.so API is not answering"
+            exit(2)
         try:
 
             response = requests.get("https://chain.so/api/v2/get_price/" + coinname + "/" + fiat)
