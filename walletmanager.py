@@ -3,6 +3,7 @@ import time
 import sys
 import getopt
 from datetime import datetime
+import blockcypher
 
 def parsing_arguments(argv):
 
@@ -31,83 +32,28 @@ def parsing_arguments(argv):
 
     return balance, transaction
 
-def coin_status(coinname):
-
-    response = requests.get('https://chain.so/api/v2/get_info/' + coinname)
-
-    if response.status_code == 200:
-        # everything went swimmingly
-        # parse the response as JSON
-        content = response.json()
-
-        print "Name:", content['data']['name']
-        print "Total Blocks:", content['data']['blocks']
 
 def wallet_balance(wallet_address, coinname):
 
-    for i in range(0, 20):
-        if i == 19:
-            print "chain.so API is not answering"
-            exit(2)
-        try:
-            response = requests.get("https://chain.so/api/v2/get_address_balance/" + coinname + "/" + wallet_address)
+    balance = float(blockcypher.get_total_balance(wallet_address, coin_symbol=coinname.lower(), api_key='cc5441d1862a4463961abaf964cdfe84'))/100000000
+    return balance
 
-            if response.status_code == 200:
-                # everything went swimmingly
-                # parse the response as JSON
-                content = response.json()
-
-                work_balance = float(content['data']['confirmed_balance'])
-                work_unconfirmed_balance = float(content['data']['unconfirmed_balance'])
-
-                print "Coin: " + coinname + " ==> Address: " + wallet_address + " ==> " + str(work_balance)
-
-                return work_balance
-
-            else:
-                #print i, response.status_code
-                time.sleep(i)
-                raise ValueError('connection error')
-        except:
-            continue
 
 def wallet_transactions(wallet_address, coinname):
 
-    for i in range(0, 20):
-        if i == 19:
-            print "chain.so API is not answering"
-            exit(2)
-        try:
-            response = requests.get(
-                "https://chain.so/api/v2/address/" + coinname + "/" + wallet_address)
-
-            if response.status_code == 200:
-                # everything went swimmingly
-                # parse the response as JSON
-                content = response.json()
-
-            else:
-                # print i, response.status_code
-                sys.stdout.write('.')
-                time.sleep(i)
-                raise ValueError('connection error')
-        except:
-            continue
+    content = blockcypher.get_address_details(wallet_address, coin_symbol=coinname.lower(), api_key='cc5441d1862a4463961abaf964cdfe84')
 
     print "\n"
 
     out_file = open(coinname + "_" + wallet_address + ".txt", "w")
 
-    for transaction in content['data']['txs']:
-        transactions_str = transaction['txid'] + " -- " + datetime.fromtimestamp(int(transaction['time'])).strftime('%Y-%m-%d %H:%M:%S') + " -- " + transaction['incoming']['value']
-        print transactions_str
-        out_file.write(transactions_str + "\n")
+    for transaction in content['txrefs']:
+         #transactions_str = transaction['tx_hash'] + " -- " + datetime.fromtimestamp(int(transaction['time'])).strftime('%Y-%m-%d %H:%M:%S') + " -- " + transaction['incoming']['value']
+         transactions_str = transaction['tx_hash'] + " -- " + str(transaction['confirmed']) + " -- " + str(float(transaction['value']) / 100000000)
+         print transactions_str
+         out_file.write(transactions_str + "\n")
 
     out_file.close()
-
-
-
-                # print response.status_code
 
 
 
@@ -116,20 +62,16 @@ def getprice(coinname, fiat):
     for i in range(0, 20):
 
         if i == 19:
-            print "chain.so API is not answering"
+            print "coincap API is not answering"
             exit(2)
         try:
 
-            response = requests.get("https://chain.so/api/v2/get_price/" + coinname + "/" + fiat)
+            response = requests.get('http://www.coincap.io/page/' + coinname.upper())
 
             if response.status_code == 200:
-                # everything went swimmingly
-                # parse the response as JSON
                 content = response.json()
 
-                price = float(content['data']['prices'][0]['price'])
-                # work_unconfirmed_balance = float(content['data']['unconfirmed_balance'])
-
+                price = content['price_'+fiat.lower()]
                 return price
 
             else:
