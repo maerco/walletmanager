@@ -48,7 +48,6 @@ def wallet_transactions(wallet_address, coinname):
     out_file = open(coinname + "_" + wallet_address + ".txt", "w")
 
     for transaction in content['txrefs']:
-         #transactions_str = transaction['tx_hash'] + " -- " + datetime.fromtimestamp(int(transaction['time'])).strftime('%Y-%m-%d %H:%M:%S') + " -- " + transaction['incoming']['value']
          transactions_str = transaction['tx_hash'] + " -- " + str(transaction['confirmed']) + " -- " + str(float(transaction['value']) / 100000000)
          print transactions_str
          out_file.write(transactions_str + "\n")
